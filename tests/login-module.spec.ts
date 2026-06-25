@@ -51,8 +51,8 @@ test('[Login] Verify that the user cannot log on with an invalid username.',{
 test('[Login] Verify that the user cannot log on with an invalid username and password.',{tag:["@UI","@UAT"]},async({gotoUrl,loginPage,commonUtils})=>{
   
     await loginPage.loginOrangeHRM(loginModuleData.wrong_username, loginModuleData.wrong_password);
-    // await expect(loginPage.invalidCredentialsErrorMessage).toHaveText(loginModuleData.invalid_credentials_error_message);
-    await expect(loginPage.invalidCredentialsErrorMessage).toHaveText("qwerty");
+    await expect(loginPage.invalidCredentialsErrorMessage).toHaveText(loginModuleData.invalid_credentials_error_message);
+     //await expect(loginPage.invalidCredentialsErrorMessage).toHaveText("qwerty");
     await expect(loginPage.userNameInput).toBeVisible();
 
 
