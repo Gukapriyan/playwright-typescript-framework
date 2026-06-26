@@ -74,19 +74,19 @@ export default defineConfig({
       },
     },
 
-    {
-      name: 'firefox',
-      dependencies: ['setup'],
-      use: { ...devices['Desktop Firefox'] ,
-        storageState: './playwright/.auth/storageState.json'},
-    },
+    // {
+    //   name: 'firefox',
+    //   dependencies: ['setup'],
+    //   use: { ...devices['Desktop Firefox'] ,
+    //     storageState: './playwright/.auth/storageState.json'},
+    // },
 
-    {
-      name: 'webkit',
-      dependencies: ['setup'],
-      use: { ...devices['Desktop Safari'] ,
-        storageState: './playwright/.auth/storageState.json'},
-    },
+    // {
+    //   name: 'webkit',
+    //   dependencies: ['setup'],
+    //   use: { ...devices['Desktop Safari'] ,
+    //     storageState: './playwright/.auth/storageState.json'},
+    // },
 
     /* Test against mobile viewports. */
     // {
