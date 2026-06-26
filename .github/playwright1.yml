@@ -8,18 +8,16 @@ on:
   workflow_dispatch:
 
 jobs:
-  playwright:
+  playwright-tests:
     name: Execute Playwright Tests
-
     runs-on: ubuntu-latest
-
     timeout-minutes: 60
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -31,15 +29,9 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Playwright Tests
-        env:
-          BASE_URL: ${{ secrets.BASE_URL }}
-          USERNAME: ${{ secrets.USERNAME }}
-          PASSWORD: ${{ secrets.PASSWORD }}
-          API_KEY: ${{ secrets.API_KEY }}
-        run: |
-          npx playwright test
+        run: npx playwright test
 
-      - name: Upload HTML Report
+      - name: Upload Playwright HTML Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
