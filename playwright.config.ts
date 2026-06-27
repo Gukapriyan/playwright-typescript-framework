@@ -30,9 +30,9 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 1,
+  retries: process.env.CI ? 2 : 0,
   /* OrangeHRM demo auth state is shared across tests, so keep execution serial. */
-  workers: 1,
+  workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
  reporter: [
   ['list'],
@@ -74,19 +74,19 @@ export default defineConfig({
       },
     },
 
-    {
-      name: 'firefox',
-      dependencies: ['setup'],
-      use: { ...devices['Desktop Firefox'] ,
-        storageState: './playwright/.auth/storageState.json'},
-    },
+    // {
+    //   name: 'firefox',
+    //   dependencies: ['setup'],
+    //   use: { ...devices['Desktop Firefox'] ,
+    //     storageState: './playwright/.auth/storageState.json'},
+    // },
 
-    {
-      name: 'webkit',
-      dependencies: ['setup'],
-      use: { ...devices['Desktop Safari'] ,
-        storageState: './playwright/.auth/storageState.json'},
-    },
+    // {
+    //   name: 'webkit',
+    //   dependencies: ['setup'],
+    //   use: { ...devices['Desktop Safari'] ,
+    //     storageState: './playwright/.auth/storageState.json'},
+    // },
 
     /* Test against mobile viewports. */
     // {
