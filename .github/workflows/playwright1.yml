@@ -32,6 +32,35 @@ jobs:
       - name: Run Playwright Tests
         run: npx playwright test
 
+      - name: Check Optional Artifacts
+        if: always()
+        id: artifacts
+        shell: bash
+        run: |
+          if [ -d test-results ] && [ -n "$(find test-results -mindepth 1 -print -quit)" ]; then
+            echo "test_results=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "test_results=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if find test-results -type f -name '*.png' -print -quit 2>/dev/null | grep -q .; then
+            echo "screenshots=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "screenshots=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if find test-results -type f -name '*.webm' -print -quit 2>/dev/null | grep -q .; then
+            echo "videos=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "videos=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if find test-results -type f -name '*.zip' -print -quit 2>/dev/null | grep -q .; then
+            echo "traces=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "traces=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Upload Playwright HTML Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -42,16 +71,16 @@ jobs:
           retention-days: 30
 
       - name: Upload Test Results
-        if: always()
+        if: always() && steps.artifacts.outputs.test_results == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: test-results/
-          if-no-files-found: warn
+          if-no-files-found: ignore
           retention-days: 30
 
       - name: Upload Screenshots
-        if: always()
+        if: always() && steps.artifacts.outputs.screenshots == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: screenshots
@@ -60,7 +89,7 @@ jobs:
           retention-days: 30
 
       - name: Upload Videos
-        if: always()
+        if: always() && steps.artifacts.outputs.videos == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: videos
@@ -69,7 +98,7 @@ jobs:
           retention-days: 30
 
       - name: Upload Traces
-        if: always()
+        if: always() && steps.artifacts.outputs.traces == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: traces
