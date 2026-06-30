@@ -2,18 +2,36 @@ name: Playwright QE Automation
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment"
+        required: true
+        type: choice
+        options:
+          - DEV
+          - QA
+          - UAT
+        default: DEV
 
-  repository_dispatch:
-    types:
-      - run-playwright
+      suite:
+        description: "Test Suite"
+        required: true
+        type: choice
+        options:
+          - Smoke
+          - Regression
+        default: Regression
 
 jobs:
   playwright-tests:
     name: Run Playwright Tests
+
     runs-on: ubuntu-latest
+
     timeout-minutes: 60
 
     steps:
+
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -23,85 +41,40 @@ jobs:
           node-version: 24
           cache: npm
 
+      - name: Display Inputs
+        run: |
+          echo "Environment : ${{ github.event.inputs.environment }}"
+          echo "Suite       : ${{ github.event.inputs.suite }}"
+
       - name: Install Dependencies
         run: npm ci
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright Tests
-        run: npx playwright test
-
-      - name: Check Optional Artifacts
-        if: always()
-        id: artifacts
-        shell: bash
+      - name: Run Smoke Tests
+        if: github.event.inputs.suite == 'Smoke'
         run: |
-          if [ -d test-results ] && [ -n "$(find test-results -mindepth 1 -print -quit)" ]; then
-            echo "test_results=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "test_results=false" >> "$GITHUB_OUTPUT"
-          fi
+          npx playwright test --grep @smoke
 
-          if find test-results -type f -name '*.png' -print -quit 2>/dev/null | grep -q .; then
-            echo "screenshots=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "screenshots=false" >> "$GITHUB_OUTPUT"
-          fi
-
-          if find test-results -type f -name '*.webm' -print -quit 2>/dev/null | grep -q .; then
-            echo "videos=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "videos=false" >> "$GITHUB_OUTPUT"
-          fi
-
-          if find test-results -type f -name '*.zip' -print -quit 2>/dev/null | grep -q .; then
-            echo "traces=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "traces=false" >> "$GITHUB_OUTPUT"
-          fi
+      - name: Run Regression Tests
+        if: github.event.inputs.suite == 'Regression'
+        run: |
+          npx playwright test
 
       - name: Upload Playwright HTML Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: playwright-report/
-          if-no-files-found: warn
+          path: playwright-report
           retention-days: 30
 
       - name: Upload Test Results
-        if: always() && steps.artifacts.outputs.test_results == 'true'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: test-results/
-          if-no-files-found: ignore
-          retention-days: 30
-
-      - name: Upload Screenshots
-        if: always() && steps.artifacts.outputs.screenshots == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: screenshots
-          path: test-results/**/*.png
-          if-no-files-found: ignore
-          retention-days: 30
-
-      - name: Upload Videos
-        if: always() && steps.artifacts.outputs.videos == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: videos
-          path: test-results/**/*.webm
-          if-no-files-found: ignore
-          retention-days: 30
-
-      - name: Upload Traces
-        if: always() && steps.artifacts.outputs.traces == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: traces
-          path: test-results/**/*.zip
+          path: test-results
           if-no-files-found: ignore
           retention-days: 30
